@@ -1,0 +1,105 @@
+using AuthMicroService.Auth;
+using AuthMicroService.Controllers;
+using AuthMicroService.RPC;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
+using RabbitMQ.EventBus;
+using RabbitMQ.EventBus.Producer;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+ConfigurationManager configuration = builder.Configuration;
+
+// Add services to the container.
+
+// For Entity Framework
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+
+// For Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddTransient<AuthenticateController>();
+
+// Adding Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+// Adding Jwt Bearer
+.AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = configuration["JWT:ValidAudience"],
+        ValidIssuer = configuration["JWT:ValidIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+    };
+});
+
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
+#region RabbitMQ Configuration
+
+builder.Services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
+{
+    var factory = new ConnectionFactory()
+    {
+        HostName = builder.Configuration["EventBus:HostName"]
+    };
+    factory.AutomaticRecoveryEnabled = true;
+    factory.NetworkRecoveryInterval = TimeSpan.FromSeconds(5);
+    factory.TopologyRecoveryEnabled = true;
+
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["EventBus:UserName"]))
+        factory.UserName = builder.Configuration["EventBus:UserName"];
+
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["EventBus:Password"]))
+        factory.Password = builder.Configuration["EventBus:Password"];
+
+    var retryCount = 3;
+
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["EventBus:RetryCount"]))
+        retryCount = int.Parse(builder.Configuration["EventBus:RetryCount"]);
+
+    return new DefaultRabbitMQPersistentConnection(factory, retryCount);
+});
+builder.Services.AddScoped<EventBusRabbitMQProducer>();
+builder.Services.AddSingleton<RpcClient>();
+builder.Services.AddSingleton<RpcServer>();
+
+#endregion
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+var serviceProvider = builder.Services.BuildServiceProvider();
+app.UseRabbitListener(serviceProvider);
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
