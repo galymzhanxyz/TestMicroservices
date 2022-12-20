@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.EventBus.Core.Models;
 using RabbitMQ.EventBus.Producer;
 
-namespace BlogMicroService.Middlewares
+namespace WeatherMicroService.Middlewares
 {
     public class JwtMiddleware
     {

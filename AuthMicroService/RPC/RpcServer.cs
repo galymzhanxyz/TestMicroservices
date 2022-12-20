@@ -1,5 +1,4 @@
 ﻿using AuthMicroService.Controllers;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -87,7 +86,7 @@ namespace AuthMicroService.RPC
             }
             finally
             {
-                var responseBytes = Encoding.UTF8.GetBytes(response);
+                var responseBytes = Encoding.UTF8.GetBytes(response ?? string.Empty);
                 channel.BasicPublish(
                     exchange: "",
                     routingKey: props.ReplyTo,

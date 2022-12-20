@@ -6,14 +6,17 @@ using RabbitMQ.EventBus.Core;
 using RabbitMQ.EventBus.Core.Models;
 using System.Text;
 
-namespace BlogMicroService.RPC
+namespace WeatherMicroService.RPC
 {
     public class RpcServer
     {
+        private readonly IServiceProvider _serviceProvider;
+
         private readonly IRabbitMQPersistentConnection _persistentConnection;
-        public RpcServer(IRabbitMQPersistentConnection persistentConnection, IServiceScopeFactory factory)
+        public RpcServer(IRabbitMQPersistentConnection persistentConnection, IServiceScopeFactory factory, IServiceProvider serviceProvider)
         {
             _persistentConnection = persistentConnection;
+            _serviceProvider = serviceProvider;
         }
         public void Consume(string queue)
         {
@@ -38,10 +41,10 @@ namespace BlogMicroService.RPC
             channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
             consumer.Received += (model, ea) =>
             {
-                ReceivedEvent(model, ea, channel);
+                ReceivedEventAsync(model, ea, channel);
             };
         }
-        private void ReceivedEvent(object sender, BasicDeliverEventArgs ea, IModel channel)
+        private async Task ReceivedEventAsync(object sender, BasicDeliverEventArgs ea, IModel channel)
         {
             string response = null;
 
@@ -53,16 +56,27 @@ namespace BlogMicroService.RPC
             {
                 var message = Encoding.UTF8.GetString(ea.Body.Span);
                 var data = JsonConvert.DeserializeObject<dynamic>(message);
+                string result = null;
 
                 if (ea.RoutingKey == $"{EventBusConstants.RdcPublishQueue}")
                 {
                     //Business processes
-                    if (data.MicroServiceName != nameof(BlogMicroService))
+                    using IServiceScope scope = _serviceProvider.CreateScope();
+                    //var authenticateController = scope.ServiceProvider.GetRequiredService<AuthenticateController>();
+
+                    if (data.MicroServiceName != "AuthMicroService")
                     {
                         return;
                     }
+
+                    //switch (Convert.ToString(data.ServiceName))
+                    //{
+                    //    case "ValidateToken":
+                    //        result = authenticateController.ValidateToken(Convert.ToString(data.Message));
+                    //        break;
+                    //}
                 }
-                response = JsonConvert.SerializeObject(new Response() { Success = true, Message = "Message received from server" });
+                response = JsonConvert.SerializeObject(new Response() { Success = true, Message = result });
             }
             catch (Exception ex)
             {

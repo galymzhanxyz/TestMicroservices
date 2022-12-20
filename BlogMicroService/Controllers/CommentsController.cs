@@ -1,9 +1,6 @@
 ﻿using BlogMicroService.DALS.Repositories;
 using BlogMicroService.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.EventBus.Core.Models;
-using RabbitMQ.EventBus.Producer;
 
 namespace BlogMicroService.Controllers
 {

@@ -1,28 +1,20 @@
-using BlogMicroService.DALS.Repositories;
-using BlogMicroService.Middlewares;
-using BlogMicroService.Models;
-using BlogMicroService.RPC;
-using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using RabbitMQ.EventBus;
 using RabbitMQ.EventBus.Producer;
+using WeatherMicroService.Middlewares;
+using WeatherMicroService.RPC;
+using WeatherMicroService.Services;
+using WeatherMicroService.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
-ConfigurationManager configuration = builder.Configuration;
-
-builder.Services.AddDbContext<ApplicationContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("dbConnectionStr")));
-
-builder.Services.AddScoped<CommentRepository>();
-builder.Services.AddScoped<PostRepository>();
 
 // Add services to the container.
+builder.Services.AddTransient<OpenWeatherApiService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 #region RabbitMQ Configuration
 
@@ -55,6 +47,13 @@ builder.Services.AddSingleton<RpcServer>();
 
 #endregion
 
+
+builder.Services.Configure<WeatherApiSettings>(
+    builder.Configuration.GetSection(WeatherApiSettings.Position));
+
+builder.Services.Configure<MongoSettings>(
+    builder.Configuration.GetSection(MongoSettings.Position));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -66,9 +65,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRequestCulture();
-
-var serviceProvider = builder.Services.BuildServiceProvider();
-app.UseRabbitListener(serviceProvider);
 
 app.UseAuthorization();
 

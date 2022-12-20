@@ -15,6 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05-MqEventBus", "05-MqEvent
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitMQ.EventBus", "RabbitMQ.EventBus\RabbitMQ.EventBus.csproj", "{4AA628C7-F676-4351-B9AA-C609119ED39E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04-WeatherMicroService", "04-WeatherMicroService", "{72D50EA9-8F82-406E-9D27-9D406DF2C677}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherMicroService", "WeatherMicroService\WeatherMicroService.csproj", "{89539069-2A26-4EFE-A71B-DB2652A48607}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,10 @@ Global
 		{4AA628C7-F676-4351-B9AA-C609119ED39E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4AA628C7-F676-4351-B9AA-C609119ED39E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4AA628C7-F676-4351-B9AA-C609119ED39E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89539069-2A26-4EFE-A71B-DB2652A48607}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89539069-2A26-4EFE-A71B-DB2652A48607}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89539069-2A26-4EFE-A71B-DB2652A48607}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89539069-2A26-4EFE-A71B-DB2652A48607}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +49,7 @@ Global
 		{1D258597-59DA-4CBC-AD2D-612D94519D7F} = {8820CF8A-351D-47CF-A3C2-12D323813727}
 		{4ED7DFF5-4744-402B-973D-E126127A10C8} = {1BE659BC-815D-42EA-9ECB-8073B08BD7D4}
 		{4AA628C7-F676-4351-B9AA-C609119ED39E} = {46466643-DC4C-4095-A037-CFA3D79547CB}
+		{89539069-2A26-4EFE-A71B-DB2652A48607} = {72D50EA9-8F82-406E-9D27-9D406DF2C677}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CF841DAD-F067-4BAE-81DC-8DE10915B812}
